@@ -52,6 +52,7 @@ def processdata(data3):
     checkingdata = []
     currenttutorgroup = []
     counter = 0
+    databeingheld = 0
 
     #document pre-processing (matching multiple attendance blocks to the same student)
     for j in range(0,len(data3),1): #for each row of the excel document
@@ -71,6 +72,7 @@ def processdata(data3):
                         if currenttutorgroup == row[1]: #if we have already passed a given tutor group label
                             if len(helddata)<1: # if no attendance data have been passed yet
                                 helddata = checkingdata  #checked data passed onto held data
+                                databeingheld = 1
                                 checkingdata = [] #resetcheckingdata
 
                             else: 
@@ -80,14 +82,18 @@ def processdata(data3):
                             
                                     
                         else: #if tutor group is for a new class
-
-                            #Update held data from last round
-                            helddata = mergetutorrows(checkingdata,helddata)
-
+                            
+                            #Update helddata from any previous round
+                            if databeingheld == 1:
+                                helddata = mergetutorrows(checkingdata,helddata)
+                            else:
+                                helddata = checkingdata
+                                
                             #Extract data and reset storage arrays
                             processeddata = extractinfomation(currenttutorgroup, helddata, processeddata)
                             helddata = []
                             checkingdata = []
+                            databeingheld = 0
                             currenttutorgroup = row[1] #update tutor group
 
                 else: #if its a student name and their register entries then just store into temporary array of data being checked
@@ -222,7 +228,7 @@ for row in processeddata:
         tutorstring = row[1]
         end = len(tutorstring)
         tutorcode = tutorstring[end-2:end]
-        if tutorcode[0]=='0':   #if tutor code starts with a '0' for year 10 then add the 1 to the code
+        if tutorcode[0]=='0' or tutorcode[0]=='1' or tutorcode[0]=='2' or tutorcode[0]=='3':   #if tutor code starts with a 0, 1, 2 or 3 for year 10, 11, 12, 13 then add the 1 to the code
             tutorcode = '1' + tutorcode
             
         #Create a new folder
